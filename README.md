@@ -1,580 +1,464 @@
-# 🛡️ Explicación Completa del Uso de Ambos Scripts
-
-## 📋 **Tabla de Contenidos**
-1. [Port Scanner Avanzado](#port-scanner-avanzado)
-2. [OS Fingerprinting Independiente](#os-fingerprinting-independiente)
-3. [Ejemplos Prácticos](#ejemplos-prácticos)
-4. [Integración en Otros Proyectos](#integración-en-otros-proyectos)
-5. [Mejores Prácticas](#mejores-prácticas)
-
----
-
-## 🔍 **Port Scanner Avanzado**
+## 📁 **1. PORT SCANNER AVANZADO** (`port_scanner.py`)
 
 ### **Descripción General**
-El Port Scanner Avanzado es una herramienta profesional que combina múltiples técnicas de escaneo, detección de servicios, fingerprinting de SO y generación de reportes detallados.
+Herramienta profesional de escaneo de puertos que combina múltiples técnicas de escaneo, detección de servicios, fingerprinting de SO y generación de reportes detallados.
 
-### **Instalación de Dependencias**
-
+### **Instalación**
 ```bash
-# Instalar scapy (requerido para funciones avanzadas)
+# Instalar dependencias principales
 pip install scapy
 
-# En sistemas Linux,可能需要 permisos adicionales
-sudo apt-get install tcpdump  # Para captura de paquetes
+# En Linux, instalar también:
+sudo apt-get install tcpdump
 
 # En Windows, instalar WinPcap o Npcap
 ```
 
-### **Sintaxis Básica**
-
+### **Sintaxis Completa**
 ```bash
 python port_scanner.py [OPCIONES] TARGET
 ```
 
-### **Argumentos Principales**
+### **Todos los Parámetros Disponibles**
 
-| Argumento | Descripción | Valores | Default |
+| Parámetro | Descripción | Valores | Default |
 |-----------|-------------|---------|---------|
-| `TARGET` | **Requerido** - IP o dominio objetivo | Cualquier IP/Dominio válido | - |
+| `TARGET` | **OBLIGATORIO** - IP o dominio a escanear | Cualquier IP/Dominio | - |
 | `-p, --ports` | Puertos a escanear | `common`, `all`, `1-1000`, `22,80,443` | `common` |
 | `-t, --scan-type` | Tipo de escaneo | `tcp`, `syn`, `udp` | `tcp` |
-| `--threads` | Número máximo de hilos | 1-1000 | `100` |
+| `--threads` | Número máximo de hilos concurrentes | 1-1000 | `100` |
 | `--timeout` | Timeout por puerto (segundos) | 0.1-10.0 | `1.0` |
-| `--os-detection` | Habilitar detección de SO | Flag (sin valor) | `False` |
-| `--no-host-discovery` | Saltar descubrimiento de host | Flag | `False` |
-| `--force-scan` | Forzar escaneo si host inactivo | Flag | `False` |
-| `--output-format` | Formato del reporte | `text`, `json`, `csv` | `text` |
+| `--os-detection` | Activar detección de SO | Flag (sin valor) | `False` |
+| `--no-host-discovery` | Saltar verificación de host activo | Flag | `False` |
+| `--force-scan` | Forzar escaneo aunque host esté inactivo | Flag | `False` |
+| `--output-format` | Formato del reporte final | `text`, `json`, `csv` | `text` |
 | `-o, --output-file` | Guardar reporte en archivo | Ruta de archivo | - |
-| `-v, --verbose` | Modo verbose | Flag | `False` |
+| `-v, --verbose` | Modo detallado con más información | Flag | `False` |
 
-### **Modos de Escaneo Detallados**
+### **Ejemplos Prácticos de Uso**
 
-#### **1. Escaneo TCP (Conexión Completa)**
+#### **Ejemplo 1: Escaneo Básico para Principiantes**
 ```bash
-python port_scanner.py 192.168.1.1 -t tcp
-```
-- **Ventajas**: Más confiable, no requiere privilegios especiales
-- **Desventajas**: Más detectable, establece conexión completa
-- **Uso ideal**: Escaneos generales, entornos permisivos
+# Escaneo simple de puertos comunes en un router local
+python port_scanner.py 192.168.1.1
 
-#### **2. Escaneo SYN (Medio Abierto)**
+# Salida esperada:
+# 🛡️  Advanced Port Scanner - Versión Profesional
+# ==================================================
+# 🎯 Iniciando escaneo en 192.168.1.1...
+# 🟢 Puerto 22/TCP ABIERTO - SSH
+# 🟢 Puerto 53/TCP ABIERTO - DNS
+# 🟢 Puerto 80/TCP ABIERTO - HTTP
+# 🟢 Puerto 443/TCP ABIERTO - HTTPS
+# ...
+# 📋 REPORTE DE ESCANEO DE PUERTOS - AVANZADO
+```
+
+#### **Ejemplo 2: Escaneo Profesional para Auditorías**
 ```bash
-sudo python port_scanner.py 192.168.1.1 -t syn
+# Escaneo completo con todas las características
+sudo python port_scanner.py 192.168.1.100 \
+  -p 1-1000 \
+  -t syn \
+  --os-detection \
+  --threads 200 \
+  --timeout 0.5 \
+  -v \
+  -o audit_scan.json \
+  --output-format json
 ```
-- **Ventajas**: Más sigiloso, más rápido
-- **Desventajas**: Requiere permisos de administrador
-- **Uso ideal**: Escaneos sigilosos, auditorías de seguridad
 
-#### **3. Escaneo UDP**
+#### **Ejemplo 3: Escaneo Rápido de Servicios Web**
 ```bash
-python port_scanner.py 192.168.1.1 -t udp --timeout 3
+# Verificar solo servicios web comunes rápidamente
+python port_scanner.py webserver.com \
+  -p 80,443,8080,8443,3000,5000 \
+  --threads 50 \
+  --timeout 1 \
+  -v
 ```
-- **Ventajas**: Detecta servicios UDP
-- **Desventajas**: Menos confiable, más lento
-- **Uso ideal**: DNS, DHCP, servicios UDP específicos
 
-### **Configuraciones de Puertos**
-
-#### **Puertos Comunes (Recomendado)**
+#### **Ejemplo 4: Escaneo UDP para Servicios Específicos**
 ```bash
-python port_scanner.py 192.168.1.1 -p common
+# Escanear servicios UDP (más lento, requiere más timeout)
+python port_scanner.py dns-server.com \
+  -t udp \
+  -p 53,67,68,161,162 \
+  --timeout 3 \
+  -v
 ```
-Escanea los puertos más utilizados: 21, 22, 23, 25, 53, 80, 110, 143, 443, 993, 995, 135, 139, 445, 3389, etc.
 
-#### **Rango Personalizado**
+#### **Ejemplo 5: Escaneo para Monitoreo Continuo**
 ```bash
-# Rango continuo
-python port_scanner.py 192.168.1.1 -p 1-1000
-
-# Puertos específicos
-python port_scanner.py 192.168.1.1 -p 22,80,443,3389
-
-# Todos los puertos (¡Cuidado! Muy lento)
-python port_scanner.py 192.168.1.1 -p all
+# Configuración optimizada para scripts de monitoreo
+python port_scanner.py critical-server.local \
+  -p 22,80,443,3306,5432,6379 \
+  --output-format json \
+  -o status_$(date +%Y%m%d_%H%M%S).json \
+  --no-host-discovery
 ```
 
-### **Configuración de Rendimiento**
+### **Casos de Uso Específicos**
 
-#### **Optimización para Redes Locales**
+#### **Para Administradores de Red**
 ```bash
-python port_scanner.py 192.168.1.1 --threads 200 --timeout 0.5
+# Inventario de servicios en toda la red
+for ip in 192.168.1.{1..254}; do
+  python port_scanner.py $ip -p common -o scan_$ip.json --output-format json
+done
 ```
 
-#### **Optimización para Internet**
+#### **Para Desarrolladores**
 ```bash
-python port_scanner.py example.com --threads 50 --timeout 2
+# Verificar servicios de desarrollo local
+python port_scanner.py localhost -p 3000,4200,5000,5432,6379,8080 -v
+
+# Verificar contenedores Docker
+python port_scanner.py 172.17.0.2 -p 1-10000 --threads 50
 ```
 
-#### **Escaneo Sigiloso**
+#### **Para Auditorías de Seguridad**
 ```bash
-sudo python port_scanner.py 192.168.1.1 -t syn --threads 10 --timeout 3
-```
-
-### **Ejemplos Completos de Uso**
-
-#### **Ejemplo 1: Escaneo Básico de Red Local**
-```bash
-python port_scanner.py 192.168.1.1 -v
-```
-**Salida esperada:**
-```
-🛡️  Advanced Port Scanner - Versión Profesional
-==================================================
-🎯 Iniciando escaneo en 192.168.1.1...
-ℹ️  INFO: Iniciando descubrimiento de host...
-ℹ️  INFO: Host descubierto: Host activo (TTL: 64)
-🟢 Puerto 22/TCP ABIERTO - SSH
-🟢 Puerto 80/TCP ABIERTO - HTTP
-🟢 Puerto 443/TCP ABIERTO - HTTPS
-...
-📊 REPORTE DE ESCANEO DE PUERTOS - AVANZADO
-```
-
-#### **Ejemplo 2: Escaneo Profesional con OS Detection**
-```bash
-sudo python port_scanner.py 192.168.1.1 -p 1-1000 -t syn --os-detection -v -o scan_report.json --output-format json
-```
-
-#### **Ejemplo 3: Escaneo Rápido de Servicios Específicos**
-```bash
-python port_scanner.py example.com -p 21,22,23,25,53,80,110,143,443,993,995,3389 --threads 150 --timeout 1
+# Escaneo sigiloso con SYN
+sudo python port_scanner.py target-company.com \
+  -t syn \
+  -p 1-10000 \
+  --threads 100 \
+  --timeout 2 \
+  --os-detection \
+  -o security_audit.json
 ```
 
 ### **Interpretación de Resultados**
 
-#### **Estados de Puerto**
-- **🟢 ABIERTO**: Servicio activo y accesible
-- **🔴 CERRADO**: No hay servicio escuchando
-- **🟡 FILTRADO**: Firewall bloquea las solicitudes
+#### **Estados de Puerto en el Reporte**
+```text
+🟢 ABIERTO    - Servicio activo y accesible
+🔴 CERRADO    - No hay servicio escuchando
+🟡 FILTRADO   - Firewall está bloqueando las solicitudes
+⚪ ERROR      - Error durante el escaneo
+```
 
 #### **Niveles de Riesgo**
-- **🔴 ALTO**: Telnet, SMB, RDP, VNC (sin seguridad)
-- **🟡 MEDIO**: FTP, HTTP, SMTP (potencialmente inseguros)
-- **🟢 BAJO**: SSH, HTTPS, IMAPS (generalmente seguros)
-
-#### **Ejemplo de Reporte**
 ```text
-📋 PUERTOS ABIERTOS DETALLADOS:
-  Puerto 22/TCP
-    Servicio: SSH
-    Riesgo: 🟢 Low
-    Banner: SSH-2.0-OpenSSH_8.2p1
+🔴 ALTO     - Telnet (23), SMB (445), RDP (3389), VNC (5900)
+🟡 MEDIO    - FTP (21), HTTP (80), SMTP (25), MySQL (3306)
+🟢 BAJO     - SSH (22), HTTPS (443), IMAPS (993), POP3S (995)
+```
 
-  Puerto 80/TCP
-    Servicio: HTTP
-    Riesgo: 🟡 Medium
-    Banner: HTTP/1.1 200 OK...
-
+#### **Ejemplo de Reporte de Seguridad**
+```text
 ⚠️  EVALUACIÓN DE SEGURIDAD:
   Nivel de riesgo: Medium
-  Puertos de alto riesgo: 0
+  Puertos de alto riesgo: 1
 
 🚨 ADVERTENCIAS:
-  • Puerto 80 (HTTP): Tráfico no encriptado - Considerar TLS
+  • Puerto 23 (Telnet): Tráfico no encriptado - Considerar SSH
+  • Puerto 80 (HTTP): Considerar migrar a HTTPS
+
+💡 RECOMENDACIONES:
+  • Hay 5 puertos abiertos - Revisar necesidad de cada servicio
+  • Servicios sin encriptación detectados - Migrar a versiones TLS/SSL
 ```
 
 ---
 
-## 🖥️ **OS Fingerprinting Independiente**
+## 📁 **2. OS FINGERPRINTING INDEPENDIENTE** (`os_fingerprinter.py`)
 
 ### **Descripción General**
-Módulo especializado en detección avanzada de sistema operativo, usable de forma independiente o integrado en otras herramientas.
+Módulo especializado exclusivamente en detección avanzada de sistema operativo, usando técnicas sofisticadas de fingerprinting TCP/IP.
 
-### **Sintaxis Básica**
+### **Sintaxis Completa**
 ```bash
 python os_fingerprinter.py [OPCIONES] TARGET
 ```
 
-### **Argumentos Principales**
+### **Todos los Parámetros Disponibles**
 
-| Argumento | Descripción | Valores | Default |
+| Parámetro | Descripción | Valores | Default |
 |-----------|-------------|---------|---------|
-| `TARGET` | **Requerido** - IP objetivo | Cualquier IP/Dominio | - |
-| `-p, --ports` | Puertos abiertos conocidos | `22,80,443,3389` | - |
-| `-q, --quick` | Modo rápido | Flag | `False` |
-| `-v, --verbose` | Modo verbose | Flag | `False` |
-| `-o, --output` | Guardar resultados JSON | Ruta de archivo | - |
+| `TARGET` | **OBLIGATORIO** - IP o dominio a analizar | Cualquier IP/Dominio | - |
+| `-p, --ports` | Puertos abiertos conocidos (mejora precisión) | `22,80,443,3389` | - |
+| `-q, --quick` | Modo rápido (solo pruebas esenciales) | Flag | `False` |
+| `-v, --verbose` | Modo detallado con información técnica | Flag | `False` |
+| `-o, --output` | Guardar resultados en archivo JSON | Ruta de archivo | - |
 
-### **Modos de Operación**
-
-#### **1. Modo Rápido (-q)**
-```bash
-python os_fingerprinter.py 192.168.1.1 -q
-```
-- **Técnicas**: Solo TTL y ventana TCP básica
-- **Velocidad**: 5-10 segundos
-- **Precisión**: 60-70%
-
-#### **2. Modo Completo (Default)**
-```bash
-python os_fingerprinter.py 192.168.1.1
-```
-- **Técnicas**: TTL, TCP options, ICMP, análisis de puertos
-- **Velocidad**: 20-30 segundos
-- **Precisión**: 85-95%
-
-#### **3. Con Puertos Conocidos**
-```bash
-python os_fingerprinter.py 192.168.1.1 -p 22,80,443,3389 -v
-```
-- **Mejora precisión**: Usa puertos específicos de SO
-- **Recomendado**: Cuando se conocen puertos abiertos
-
-### **Ejemplos de Uso**
+### **Ejemplos Prácticos de Uso**
 
 #### **Ejemplo 1: Fingerprinting Básico**
 ```bash
+# Detección simple del sistema operativo
 python os_fingerprinter.py 192.168.1.1
-```
-**Salida esperada:**
-```
-🎯 Iniciando fingerprinting en 192.168.1.1...
 
-==================================================
-🖥️  RESULTADOS DE FINGERPRINTING
-==================================================
-Objetivo: 192.168.1.1
-SO Detectado: Linux
-Familia: Linux
-Versión: Linux Kernel 5.x
-Confianza: 85%
-Pruebas realizadas: TTL_Analysis, TCP_SYN_Standard, TCP_SYN_With_Options...
+# Salida esperada:
+# 🎯 Iniciando fingerprinting en 192.168.1.1...
+# 
+# ==================================================
+# 🖥️  RESULTADOS DE FINGERPRINTING
+# ==================================================
+# Objetivo: 192.168.1.1
+# SO Detectado: Linux
+# Familia: Linux  
+# Versión: Linux Kernel 5.x
+# Confianza: 85%
+# Pruebas realizadas: TTL_Analysis, TCP_SYN_Standard, TCP_SYN_With_Options...
 ```
 
-#### **Ejemplo 2: Fingerprinting Avanzado con Verbose**
+#### **Ejemplo 2: Fingerprinting Avanzado con Puertos Conocidos**
 ```bash
-python os_fingerprinter.py 192.168.1.1 -p 22,80,443 -v -o os_results.json
+# Mayor precisión proporcionando puertos abiertos
+python os_fingerprinter.py 192.168.1.100 \
+  -p 22,80,443,3389,5985 \
+  -v \
+  -o os_analysis.json
 ```
 
 #### **Ejemplo 3: Detección Rápida**
 ```bash
-python os_fingerprinter.py 192.168.1.1 -q
+# Para situaciones donde se necesita velocidad sobre precisión
+python os_fingerprinter.py 192.168.1.50 -q
+```
+
+#### **Ejemplo 4: Fingerprinting para Auditoría**
+```bash
+# Análisis completo con toda la información técnica
+python os_fingerprinter.py server.company.com \
+  -p 22,80,443,993,995,1433,3389 \
+  -v \
+  -o server_os_audit.json
+```
+
+### **Casos de Uso Específicos**
+
+#### **Para Equipos de Seguridad**
+```bash
+# Identificar sistemas operativos en la red
+python os_fingerprinter.py 10.0.1.25 -v -o windows_server_os.json
+
+# Verificar si un servicio está corriendo en el SO esperado
+python os_fingerprinter.py web-server.com -p 80,443
+```
+
+#### **Para Administradores de Sistemas**
+```bash
+# Inventario de SO en múltiples servidores
+servers=("192.168.1.10" "192.168.1.11" "192.168.1.12")
+for server in "${servers[@]}"; do
+  echo "Analizando $server..."
+  python os_fingerprinter.py $server -q
+done
+```
+
+#### **Para Desarrolladores**
+```bash
+# Verificar el SO de servidores de desarrollo
+python os_fingerprinter.py staging-server.com -v
+
+# Identificar el SO de un contenedor
+python os_fingerprinter.py 172.17.0.3 -p 22,80,3000
 ```
 
 ### **Interpretación de Resultados**
 
 #### **Niveles de Confianza**
-- **95%+**: Múltiples técnicas coinciden
-- **80-94%**: Buena evidencia de múltiples fuentes
-- **60-79%**: Evidencia moderada
-- **<60%**: Baja confianza, posiblemente incorrecto
+```text
+95-100%  - Certeza muy alta, múltiples técnicas coinciden
+80-94%   - Alta confianza, buena evidencia
+60-79%   - Confianza moderada
+40-59%   - Baja confianza, posiblemente incorrecto
+0-39%    - Muy baja confianza
+```
 
 #### **Familias de SO Detectables**
-- **Windows**: 10/11, 8/8.1, 7, Server
-- **Linux**: Kernel 2.6, 3.x, 4.x, 5.x
-- **macOS**: 10.12+, 14+
-- **BSD**: FreeBSD, OpenBSD
-- **Android**: 5-7, 8-11, 12+
-- **iOS**: 12-14, 15+
+```text
+Windows    - 10/11, 8/8.1, 7, Server 2012/2016/2019/2022
+Linux      - Kernel 2.6, 3.x, 4.x, 5.x (Ubuntu, CentOS, Debian, etc.)
+macOS      - 10.12+, 11.x, 12.x, 13.x, 14.x
+BSD        - FreeBSD, OpenBSD, NetBSD
+Android    - 5-7, 8-11, 12+
+iOS        - 12-14, 15+
+```
+
+#### **Ejemplo de Resultado Detallado (Verbose)**
+```text
+📊 Análisis Detallado:
+  TTL: 64 (Consistente: True)
+  Pruebas TCP exitosas: 5/6
+  Ventana TCP: 65535
+  Opciones TCP: MSS, WindowScale, SACK, Timestamp
+  Comportamiento ICMP: Respuesta normal
+
+🔧 Técnicas Utilizadas:
+  • TTL Analysis
+  • TCP Window Size  
+  • TCP Options Analysis
+  • ICMP Behavior
+  • Port Pattern Analysis
+```
+
+### **Diferencias Entre Modos**
+
+#### **Modo Completo (Default)**
+- **Tiempo**: 20-30 segundos
+- **Técnicas**: TTL, TCP Options, ICMP, análisis de puertos
+- **Precisión**: 85-95%
+- **Uso**: Auditorías, análisis forenses
+
+#### **Modo Rápido (-q)**
+- **Tiempo**: 5-10 segundos  
+- **Técnicas**: Solo TTL y ventana TCP básica
+- **Precisión**: 60-70%
+- **Uso**: Escaneos rápidos, monitoreo
 
 ---
 
-## 🔄 **Ejemplos Prácticos**
+## 🔄 **Flujos de Trabajo Combinados**
 
-### **Caso 1: Auditoría de Seguridad Interna**
-
+### **Workflow de Auditoría Completa**
 ```bash
-# Escaneo completo de red local
-python port_scanner.py 192.168.1.0/24 -p common -t syn --os-detection -v -o internal_audit.json --output-format json
+# Paso 1: Escaneo de puertos
+python port_scanner.py 192.168.1.100 -p common -v -o ports_scan.json
 
-# Analizar servidor específico
-sudo python port_scanner.py 192.168.1.100 -p all -t syn --threads 50 --os-detection
+# Paso 2: Extraer puertos abiertos del JSON
+OPEN_PORTS=$(python -c "import json; data=json.load(open('ports_scan.json')); print(','.join(str(p['port']) for p in data['ports']['open']))")
+
+# Paso 3: Fingerprinting avanzado con puertos conocidos
+python os_fingerprinter.py 192.168.1.100 -p $OPEN_PORTS -v -o os_analysis.json
 ```
 
-### **Caso 2: Pruebas de Penetración**
-
+### **Workflow de Monitoreo Automatizado**
 ```bash
-# Reconocimiento inicial
-python port_scanner.py target.com -p common -v
+#!/bin/bash
+# monitoring_script.sh
 
-# Escaneo profundo en puertos descubiertos
-python port_scanner.py target.com -p 22,80,443,8080,8443 -t syn --os-detection
+TARGET="192.168.1.100"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-# Fingerprinting específico
-python os_fingerprinter.py target.com -p 80,443 -v
+echo "🔍 Iniciando monitoreo de $TARGET..."
+
+# Escaneo rápido de puertos
+python port_scanner.py $TARGET -p common --output-format json > port_scan_$TIMESTAMP.json
+
+# Extraer puertos abiertos
+OPEN_PORTS=$(python -c "import json, sys; data=json.load(open('port_scan_$TIMESTAMP.json')); ports=','.join(str(p['port']) for p in data['ports']['open']); print(ports)")
+
+# Fingerprinting rápido
+python os_fingerprinter.py $TARGET -p $OPEN_PORTS -q > os_scan_$TIMESTAMP.json
+
+echo "✅ Monitoreo completado: port_scan_$TIMESTAMP.json, os_scan_$TIMESTAMP.json"
 ```
 
-### **Caso 3: Monitoreo de Servicios**
-
+### **Script de Inventario de Red**
 ```bash
-# Verificar servicios críticos
-python port_scanner.py webserver.local -p 22,80,443,3306,5432 --threads 10 --timeout 2
+#!/bin/bash
+# network_inventory.sh
 
-# Guardar reporte para comparación
-python port_scanner.py webserver.local -p common -o baseline_scan.json --output-format json
-```
+NETWORK="192.168.1"
+OUTPUT_DIR="inventory_$(date +%Y%m%d)"
 
-### **Caso 4: Desarrollo y Testing**
+mkdir -p $OUTPUT_DIR
 
-```bash
-# Probar aplicación local
-python port_scanner.py localhost -p 3000,4200,5000,5432,6379 -v
+echo "🔍 Realizando inventario de red $NETWORK.0/24..."
 
-# Verificar configuración de firewall
-python port_scanner.py 192.168.1.1 -p 22,80,443 -t syn
-```
-
----
-
-## 🔧 **Integración en Otros Proyectos**
-
-### **Usar OS Fingerprinting en Otros Scripts**
-
-```python
-#!/usr/bin/env python3
-from os_fingerprinter import quick_os_detect, comprehensive_os_detect
-
-# Detección rápida
-target = "192.168.1.1"
-os_name = quick_os_detect(target)
-print(f"SO detectado (rápido): {os_name}")
-
-# Detección comprehensiva
-results = comprehensive_os_detect(target, open_ports=[22, 80, 443])
-print(f"SO: {results.get('detected_os')}")
-print(f"Confianza: {results.get('confidence')}%")
-print(f"Versión: {results.get('version_estimate')}")
-```
-
-### **Integrar Port Scanner en Herramientas Propias**
-
-```python
-#!/usr/bin/env python3
-import json
-from port_scanner import AdvancedPortScanner
-
-def custom_scan(target, ports='common'):
-    config = {
-        'target': target,
-        'ports': ports,
-        'scan_type': 'tcp',
-        'threads': 100,
-        'timeout': 1,
-        'os_detection': True,
-        'verbose': False
-    }
+for i in {1..254}; do
+    IP="$NETWORK.$i"
+    echo "Analizando $IP..."
     
-    scanner = AdvancedPortScanner(config)
+    # Escaneo rápido
+    python port_scanner.py $IP -p common --output-format json > $OUTPUT_DIR/scan_$IP.json 2>/dev/null
     
-    if scanner.validate_environment() and scanner.host_discovery():
-        scanner.scan_ports()
-        return scanner.results
-    else:
-        return {"error": "Scan failed"}
+    # Si hay puertos abiertos, hacer fingerprinting
+    if [ -s "$OUTPUT_DIR/scan_$IP.json" ]; then
+        python os_fingerprinter.py $IP -q >> $OUTPUT_DIR/os_inventory.json 2>/dev/null
+    fi
+done
 
-# Uso
-results = custom_scan("example.com")
-open_ports = [p['port'] for p in results['ports']['open']]
-print(f"Puertos abiertos: {open_ports}")
-```
-
-### **Script de Automatización Completo**
-
-```python
-#!/usr/bin/env python3
-"""
-Script de automatización para auditorías de red
-"""
-
-from port_scanner import AdvancedPortScanner
-from os_fingerprinter import comprehensive_os_detect
-import json
-from datetime import datetime
-
-def network_audit(targets):
-    """Auditoría completa de múltiples objetivos"""
-    audit_report = {
-        "timestamp": datetime.now().isoformat(),
-        "targets": {}
-    }
-    
-    for target in targets:
-        print(f"🔍 Auditando {target}...")
-        
-        # Escaneo de puertos
-        scanner_config = {
-            'target': target,
-            'ports': 'common',
-            'scan_type': 'tcp',
-            'threads': 50,
-            'timeout': 2,
-            'os_detection': True,
-            'verbose': True
-        }
-        
-        scanner = AdvancedPortScanner(scanner_config)
-        if scanner.validate_environment() and scanner.host_discovery():
-            scanner.scan_ports()
-            port_results = scanner.results
-            
-            # Fingerprinting avanzado
-            open_ports = [p['port'] for p in port_results['ports']['open']]
-            os_results = comprehensive_os_detect(target, open_ports)
-            
-            audit_report["targets"][target] = {
-                "ports": port_results,
-                "os_info": os_results
-            }
-    
-    return audit_report
-
-# Ejecutar auditoría
-targets = ["192.168.1.1", "192.168.1.100", "webserver.local"]
-report = network_audit(targets)
-
-# Guardar reporte
-with open("network_audit.json", "w") as f:
-    json.dump(report, f, indent=2)
-
-print("✅ Auditoría completada y guardada en network_audit.json")
+echo "✅ Inventario guardado en directorio: $OUTPUT_DIR"
 ```
 
 ---
 
-## 🛡️ **Mejores Prácticas**
+## 🛠️ **Solución de Problemas Comunes**
 
-### **Consideraciones de Seguridad**
+### **Problemas con Port Scanner**
 
-#### **Escaneos Éticos**
+#### **Error: "Scapy requerido para escaneo SYN"**
 ```bash
-# Siempre obtener permiso
-# Documentar autorización
-# Limitar velocidad para no afectar redes
-python port_scanner.py authorized_target.com --threads 10 --timeout 2
+# Solución: Instalar scapy
+pip install scapy
+
+# O usar escaneo TCP en lugar de SYN
+python port_scanner.py 192.168.1.1 -t tcp
 ```
 
-#### **Configuraciones Seguras**
+#### **Error: "Host parece estar inactivo"**
 ```bash
-# Escaneo no intrusivo
-python port_scanner.py target.com -p common --timeout 3
+# Solución: Forzar escaneo o verificar conectividad
+python port_scanner.py 192.168.1.1 --force-scan
 
-# Limitar tasa de paquetes
-python port_scanner.py target.com --threads 20 --timeout 2
+# O verificar con ping primero
+ping 192.168.1.1
 ```
 
-### **Optimización de Rendimiento**
-
-#### **Para Redes Locales**
+#### **Escaneo muy lento**
 ```bash
-# Alta velocidad, timeouts bajos
+# Solución: Aumentar hilos y reducir timeout
 python port_scanner.py 192.168.1.1 --threads 200 --timeout 0.5
 ```
 
-#### **Para Internet**
-```bash
-# Menos hilos, timeouts más altos
-python port_scanner.py example.com --threads 50 --timeout 3
-```
+### **Problemas con OS Fingerprinting**
 
-#### **Para Redes con Latencia Alta**
+#### **Error: "Scapy no disponible"**
 ```bash
-python port_scanner.io remote-server.com --threads 30 --timeout 5
-```
-
-### **Manejo de Errores Comunes**
-
-#### **Problema: Timeouts Excesivos**
-```bash
-# Solución: Ajustar timeout
-python port_scanner.py slow-target.com --timeout 5
-```
-
-#### **Problema: Muchos Puertos Filtrados**
-```bash
-# Solución: Usar escaneo SYN (requiere sudo)
-sudo python port_scanner.py filtered-target.com -t syn
-```
-
-#### **Problema: Falta de Scapy**
-```bash
-# Solución: Instalar dependencias
+# Solución: Instalar scapy
 pip install scapy
 
-# En Linux,可能需要:
-sudo apt-get install python3-pip
-sudo pip install scapy
+# El script funcionará en modo básico sin scapy
 ```
 
-### **Flujos de Trabajo Recomendados**
-
-#### **Workflow de Auditoría Básica**
-1. **Descubrimiento**: `python port_scanner.py target -p common -v`
-2. **Análisis Profundo**: `python port_scanner.py target -p [puertos_abiertos] --os-detection`
-3. **Fingerprinting**: `python os_fingerprinter.py target -p [puertos_abiertos] -v`
-4. **Reporte**: Generar reporte JSON para documentación
-
-#### **Workflow de Monitoreo Continuo**
-1. **Línea base**: `python port_scanner.py server -o baseline.json --output-format json`
-2. **Monitoreo**: Ejecutar escaneos periódicos
-3. **Comparación**: Comparar con línea base
-4. **Alertas**: Configurar alertas para cambios
-
-### **Scripts de Automatización**
-
-#### **Monitor de Servicios**
+#### **Baja confianza en los resultados**
 ```bash
-#!/bin/bash
-# service_monitor.sh
-
-TARGET="192.168.1.100"
-PORTS="22,80,443,3306"
-
-echo "🔍 Monitoreando servicios en $TARGET..."
-python port_scanner.py $TARGET -p $PORTS --output-format json > scan_$(date +%Y%m%d_%H%M%S).json
-
-if [ $? -eq 0 ]; then
-    echo "✅ Escaneo completado"
-else
-    echo "❌ Error en el escaneo"
-    exit 1
-fi
+# Solución: Proporcionar puertos abiertos conocidos
+python os_fingerprinter.py 192.168.1.1 -p 22,80,443,3389
 ```
 
-#### **Programar con Cron**
-```cron
-# Ejecutar cada hora
-0 * * * * /ruta/completa/service_monitor.sh
-
-# Ejecutar diariamente a las 2 AM
-0 2 * * * /ruta/completa/daily_audit.sh
+#### **Fingerprinting toma mucho tiempo**
+```bash
+# Solución: Usar modo rápido
+python os_fingerprinter.py 192.168.1.1 -q
 ```
 
 ---
 
-## 📚 **Recursos Adicionales**
+## 📊 **Comparación de Ambos Scripts**
 
-### **Archivos de Configuración Ejemplo**
+| Característica | Port Scanner | OS Fingerprinting |
+|----------------|--------------|-------------------|
+| **Propósito principal** | Escanear puertos y servicios | Detectar sistema operativo |
+| **Tiempo de ejecución** | 1-30 minutos | 5-30 segundos |
+| **Salida** | Lista de puertos, servicios, banners | SO, versión, confianza |
+| **Uso típico** | Auditorías de seguridad, inventario | Identificación de sistemas |
+| **Requisitos** | Scapy (para SYN), socket | Scapy (para modo completo) |
 
-#### **config_scan.json**
-```json
-{
-    "target": "192.168.1.1",
-    "ports": "common",
-    "scan_type": "tcp",
-    "threads": 100,
-    "timeout": 1,
-    "os_detection": true,
-    "verbose": true,
-    "output_format": "json",
-    "output_file": "scan_results.json"
-}
-```
+### **¿Cuándo usar cada uno?**
 
-### **Plantillas de Reportes**
+- **Usa Port Scanner cuando necesites:**
+  - Saber qué puertos están abiertos
+  - Identificar servicios ejecutándose
+  - Realizar auditorías de seguridad completas
+  - Generar inventarios de red
 
-#### **report_template.md**
-```markdown
-# Reporte de Escaneo - {{target}}
-**Fecha**: {{timestamp}}
+- **Usa OS Fingerprinting cuando necesites:**
+  - Identificar el SO de un equipo específico
+  - Verificar la versión del sistema operativo
+  - Análisis forense rápido
+  - Complementar información de escaneos
 
-## Resumen
-- **Puertos abiertos**: {{open_ports_count}}
-- **SO detectado**: {{os_name}} ({{confidence}}%)
-- **Nivel de riesgo**: {{risk_level}}
+### **Uso Combinado Recomendado**
+```bash
+# Primero: Escaneo rápido de puertos
+python port_scanner.py target.com -p common -o scan.json
 
-## Recomendaciones
-{{#recommendations}}
-- {{.}}
-{{/recommendations}}
+# Luego: Fingerprinting con puertos descubiertos
+python os_fingerprinter.py target.com -p $(extraer_puertos scan.json) -v
 ```
